@@ -55,6 +55,7 @@ C++语言的源程序文件*.cpp 编译工具  g++
 ```makefile
 #注释
 #目标  依赖
+#  依赖 目标(写具体怎么生成依赖的)
 math.exe: main.o add.o sub.o cheng.o
 	gcc main.o add.o sub.o cheng.o -o math.exe
 main.o: main.c
@@ -78,6 +79,11 @@ clean:
 ```
 $@ 目标
 $< 代表依赖
+%  占位符
+
+#$@: 表示目标
+#$<: 表示第一个依赖
+#$^: 表示所有的依赖
 ```
 
 ```makefile
@@ -89,6 +95,17 @@ math.exe: main.o add.o sub.o cheng.o
 	gcc -c $< -o $@
 clean:
 	rm -f *.o math,exe
+```
+
+
+
+```makefile
+#变量
+OBJS=add.o sub.o mul.o div.o test.o
+TARGET=test
+
+$(TARGET):$(OBJS)
+    gcc $(OBJS) -o $(TARGET) 
 ```
 
 
@@ -457,7 +474,9 @@ switch (pid)
 创建子进程:当前进程是父进程，被创建进程是子进程
 
 创建完之后父子进程通知执行拷贝方式来创建,fork函数创建子进程,子进程拷贝父进程的所有代码并且记录进程上下文(运行到啥时候了）
-父进程的fork返回子进程id,子进程的fork返回0
+父进程的fork返回子进程id,子进程的fork返回0,-1表示失败,
+
+
 
 ```c
 #include <stdio.h>
@@ -522,6 +541,10 @@ int main(void)
 }
 ```
 
+![image-20230305163823052](linux2.0.assets/image-20230305163823052.png)
+
+
+
 ## 守护进程
 
 ```c
@@ -561,7 +584,7 @@ int main(void)
 		signal(SIGHUP, SIG_IGN);
 		//6.改变当前工作目录 chdir
 		chdir("/");
-		//7．重定向文件描述符号  open() dup2(fd, o) dup2(fd, 1)
+		//7．重定文件描述符号  open() dup2(fd, 0) dup2(fd, 1)
 		int fd = open("/dev/NULL", O_RDWR);
 		dup2(fd, 0);
 		dup2(fd, 1);
@@ -581,7 +604,7 @@ int main(void)
 
 + 同一主机上的进程
   		父子进程之间
-  		非父子进程之间
+    		非父子进程之间
 + 不同主机上的进程（网络通信)
 
 1．普通文件
@@ -1965,8 +1988,8 @@ int main(int argc, char **argv)
 + 文件io :   fd
 
 **windows下:**  所有描述符号的异步操作   都是   iocp
-**linux下:**   针对 socketFd 使用 epoll   称为io多路复用
-			        针对 fd  aio  称为异步IO<img src="linux2.0.assets/image-20230219153531103.png" alt="image-20230219153531103" style="zoom: 80%;" />
+**linux下:**         针对 socketFd(服务器客户端) 使用 epoll   称为io多路复用
+			              针对 fd  aio(文件)  称为异步IO<img src="linux2.0.assets/image-20230219153531103.png" alt="image-20230219153531103" style="zoom: 80%;" />
 
 让io过程异步进行,提高线程读写效率.  aio执行完毕后  立即返回
 
@@ -2553,7 +2576,7 @@ int main(int argc, char* argv[])
 
 
 
-### epoll  函数
+### epoll  函数(推荐)
 
 #### 概要
 
@@ -2681,7 +2704,7 @@ int main(int argc, char* argv[])
 	struct sockaddr_in  servAddr;  // 服务端地址信息的数据结构。
 	memset(&servAddr, 0, sizeof(servAddr));
 	servAddr.sin_family = AF_INET;//协议类型 和socket函数第一个参数一致
-	servAddr.sin_addr.s_addr = inet_addr(argv[1]); // 字符串 转成 整形, 点分十进制的IPv4地址转换成网络字节序列的长整型。  // htonl(INADDR_ANY);  任意ip地址。
+	servAddr.sin_addr.s_addr = inet_addr(argv[1]); // 字符串 转成 整形, 点分十进制的IPv4地址转换成网络字节序列的长整型。  // htonl(INADDR_ANY);  任意ip地址。 //可以用 INADDR_ANY泛指本机的意思
 	servAddr.sin_port = htons(atoi(argv[2])); // 整型 转成 整型 小端转大端
 
 	// 3. 绑定

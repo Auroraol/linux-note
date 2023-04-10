@@ -524,6 +524,14 @@ cd … 回到当前目录的上一级目录
 将空内容覆盖写入到 此文件，如果该文件不存在，就创建该文件
 ```
 
+----------
+
++ touch指令（用于创建空文件）
+
+```
+基本语法：touch 文件名称   // tou tab就行
+```
+
 ------
 
 - rm指令（用于删除空目录）
@@ -545,14 +553,25 @@ cd … 回到当前目录的上一级目录
 - mv指令（move，移动文件与目录或重命名)（以可剪切文件夹）
 
 ```shell
-基本语法： mv oldNameFile newNamefile (功能描述：重命名)
-基本语法： mv /temp/movefile 目标文件夹路径 (功能描述：移动文件，剪切)
+基本语法:
+#方式1:
+mv 待移动文件名 重命名           #(重命名)
+mv 待移动文件 目标位置/          (移动文件)
+mv 待移动目录 目标位置/          (移动目录)
+mv 待移动文件 目标位置/重命名     (移动文件+重命名) 
+
+#方式2:
+[用户名@localhost 目标位置]$ mv 待移动文件 .   #不改变名字可以直接. 改名就用新名称代替 .
 ```
 
-+ touch指令（用于创建空文件）
+注意: 写好后缀名
+
+例子:
 
 ```
-基本语法：touch 文件名称   // tou tab就行
+案例1：将/home/cat.txt文件 重新命名为pig.txt Cut
+案例2：将/home/pig.txt 文件 移动到/root目录下
+案例3: 移动整个目录: /opt/bbb 移动到/home下:   mv  /opt/bbb  /home/
 ```
 
 ------
@@ -560,56 +579,34 @@ cd … 回到当前目录的上一级目录
 - cp指令（copy拷贝文件导指定目录下）
 
 ```shell
-基本语法：cp -r 待复制文件 目标位置/改名
+基本语法：
+#方法1:
+cp -r 待复制文件 目标位置/        #(不改名)
+cp -r 待复制文件 目标位置/改名     #(改名)
 
-cp 1.txt ../   #不改名
-cp 1.txt ../2.txt #改名
-
-[用户名@localhost 目标位置]$ cp 待复制文件 .   #不改变名字可以直接. 如果需要新建文件名称就用名称代替 .
+#方式2:
+[用户名@localhost 目标位置]$ cp 待复制文件 .   #不改变名字可以直接. 改名就用新名称代替 .
 ```
 
 常用选项：
 
 **-r 递归复制整个文件夹**
 
-应用实例:
-
-将 /home/hello.txt 拷贝到 /home/bbb 目录中
-
-```shell
-cp /home/hello.txt /home/bbb
-```
-
-递归复制整个文件夹，将/home/aaa 目录下的文件全部拷贝到/home/bbb中
-
-```shell
-cp -r /home/aaa /hom/bbb  (是将整个目录和目录本身拷贝进来)
-```
-
-------
-
-+ mv指令
-
-mv 移动文件与整个目录下 或 重命名
-
-```
-基本语法
-mv oldNameFile newNameFile       (功能描述：重命名)
-mv 待移动文件 目标位置             (功能描述：移动文件)
-```
-
 例子:
 
 ```
-案例1：将/home/cat.txt文件 重新命名为pig.txt Cut
-案例2：将/home/pig.txt 文件 移动到/root目录下
-案例3: 移动整个目录: 
-如/opt/bbb 移动到/home下:    mv  /opt/bbb  /home/
+案例1：
+cp 1.txt ../       #不改名
+cp 1.txt ../2.txt  #改名
+案例2：将 /home/hello.txt 拷贝到 /home/bbb 目录下
+cp /home/hello.txt /home/bbb/
+案例3：递归复制整个文件夹，将/home/aaa 目录下的文件全部拷贝到/home/bbb中
+cp -r /home/aaa /hom/bbb/  (是将整个目录和目录本身拷贝进来)
 ```
 
 ------
 
-- cat指令（查看文件内容）
++ cat指令（查看文件内容）
 
 ```
 cat [选项] 要查看的文件
@@ -964,26 +961,32 @@ zip用于压缩文件，unzip用于解压的，在整个项目打包发布中很
 
 ```
 zip [选项]  xxx.zip   (将要压缩的内容（一般是文件和文件夹))
-
 uzip [选项] xxx.zip  （功能描述：解压文件）
 ```
 
 zip的常用项： **-r 递归压缩，即压缩目录**
 
+```
 zip -r myhome.zip /home/
+```
 
 unzip的常用项 ： **-d <目录> : 指定解压后文件的存放目录**
 
+```
 unzip -d /home/dd/
+```
 
-- tar指令
+- ==tar指令==
 
-tar指令是打包指令，**最后打包后的文件是.tar.gz的文件**。
+tar指令是打包指令，最后打包后的文件是.tar.gz的文件
 
 ```shell
-tar [选项] 目标位置/xxx.tar.gz  待打包的内容 （功能描述：打包目录，压缩后的格式.tar.gz)
+# 打包:  
+tar -czvf 目标位置/xxx.tar.gz  待打包的目录1/ 待打包的目录2/ 待打包的文件1 待打包的文件2 ....
 
-选项: -czvf 和 -xzvf
+# 解压:  
+tar -xzvf 打包的内容 -C 目标位置/    #(打包到目标位置)
+tar -xzvf 打包的内容                #(打包到当前位置)
 ```
 
 选项说明
@@ -1005,12 +1008,11 @@ tar -czvf pc.tar.gz /home/pig.txt /home/cat.txt
 案例2：将/home的文件夹压缩成myhome.tar.gz
 tar -czvf myhome.tar.gz /home/
 
-
 案例3：pc.tar.gz 解压到当前目录
 tar -xzvf pc.tar.gz
 
 案例4：将myhome.tar.gz  解压到/opt/tmp2目录下 mkdr/opt/tmp2/
-tar -xzvf myhome.tar.gz -C opt/tmp2
+tar -xzvf myhome.tar.gz -C opt/tmp2/
 
 // 将前面的数据压缩
 "$DATA" | gzip > "$BACKUP/$BATETIME/$BATETIME.gz"

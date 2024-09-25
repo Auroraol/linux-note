@@ -3449,9 +3449,24 @@ none      ##什么都不记录
 3. 重启服务 systemctl restart rsyslog.service
 3. 进入 cd /var/log/   使用  cat hsp.log  查看自定义的日志
 
+# 十八、CURL 使用
 
+[在线Curl工具](https://www.gptkong.com/tools/curl_helper)
 
+使用
 
+<img src="linux.assets/image-20240924112406672.png" alt="image-20240924112406672" style="zoom:67%;" />
 
+**例子**
 
+![image-20240924112819877](linux.assets/image-20240924112819877.png)
 
+<img src="linux.assets/image-20240924112808088.png" alt="image-20240924112808088" style="zoom:67%;" />
+
+# 十九 其他
+
+```shell
+cd /var/log/xiaoduo/squirrel
+
+tail -f sdk-tb-api.err.log | grep sdk-tb-api-gray
+```

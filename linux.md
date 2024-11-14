@@ -3463,10 +3463,105 @@ none      ##什么都不记录
 
 <img src="linux.assets/image-20240924112808088.png" alt="image-20240924112808088" style="zoom:67%;" />
 
-# 十九 其他
+# 十九 其他常用
+
+## tail指令
 
 ```shell
 cd /var/log/xiaoduo/squirrel
-
 tail -f sdk-tb-api.err.log | grep sdk-tb-api-gray
+  # 定位存在created_at_from的日志
 ```
+
+
+
+
+
+# 脚本
+
+```
+#!/bin/bash
+
+# 定义一个函数来检查 VPN 是否连接
+check_vpn_status() {
+  # 检查 sshuttle 是否仍然在运行
+  if pgrep -f "sshuttle" > /dev/null; then
+    return 0  # 表示 vpn 连接正常
+  fi
+
+  # 检查 sshuttle 是否有异常退出的日志
+  if tail -n 100 /path/to/sshuttle.log | grep -q "vpn(sshuttle) finished"; then
+    return 1  # 表示 vpn 连接丢失，且日志中有错误
+  fi
+
+  return 1  # 如果进程不存在且没有日志，认为连接丢失
+}
+
+# 定义重新连接 VPN 的函数
+reconnect_vpn() {
+  echo "VPN 连接丢失，正在重新连接..."
+  # 运行连接命令
+  sudo ktctl -d --namespace=dev-lane connect --method=vpn
+}
+
+# 增加文件描述符限制，避免 inotify 错误
+ulimit -n 10000
+
+# 定义一个循环，持续监控 VPN 连接
+while true; do
+  if check_vpn_status; then
+    echo "VPN 连接正常"
+  else
+    reconnect_vpn
+  fi
+  # 每分钟检查一次连接状态
+  sleep 60
+done
+
+```
+
+1. **给予执行权限**：
+
+   ```
+   chmod +x vpn_reconnect.sh
+   ```
+
+2. **运行脚本**：使用 `nohup` 或在后台运行该脚本，让它在你关闭终端后仍然保持运行：
+
+   ```
+   nohup ./vpn_reconnect.sh &
+   ```
+
+### 如何查看日志输出
+
+由于脚本的输出会被重定向到 `nohup.out` 文件，你可以查看该文件以获取脚本的运行日志：
+
+```
+tail -f nohup.out
+```
+
+这样，你可以实时查看脚本的输出日志。如果你想查看日志的全部内容，可以使用以下命令：
+
+```
+cat nohup.out
+```
+
+
+
+###  **保持 WSL 在后台运行**
+
+WSL 是一种通过 Windows 提供的子系统运行 Linux 环境，某些情况下，当 Windows 系统进入休眠或锁屏状态时，WSL 可能会被暂停或停止运行。因此，你可能需要确保 WSL 中的 VPN 脚本能够在系统锁定或屏幕关闭时持续运行。
+
+- 解决方案
+
+  ：
+
+  - 你可以使用 `tmux` 或 `screen` 来保持脚本在后台运行，这样即使你退出当前的 WSL 终端或锁定系统，脚本也能继续运行。
+
+    在 WSL 中运行 `tmux`：
+
+    ```
+    bashCopy Codetmux new-session -d -s vpn-monitor '/path/to/your-script.sh'
+    ```
+
+    这样脚本将会在一个新的 `tmux` 会话中运行，即使你退出或锁定系统，它也会继续执行。

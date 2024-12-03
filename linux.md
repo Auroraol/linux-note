@@ -1257,6 +1257,8 @@ chown newonwner:newgroup 改变所有者和所在组
 
 # 八、crond任务调度(定时任务)
 
+问题: Ubuntu 重设crontab -e的默认编辑器[Ubuntu 重设crontab -e的默认编辑器 ](https://www.jianshu.com/p/5b565953c99f)
+
 ## 8.1crontab 进行 定时任务的设置
 
 - 概述
@@ -3565,3 +3567,110 @@ WSL 是一种通过 Windows 提供的子系统运行 Linux 环境，某些情况
     ```
 
     这样脚本将会在一个新的 `tmux` 会话中运行，即使你退出或锁定系统，它也会继续执行。
+
+
+
+
+
+### 1. 创建清理日志的脚本
+
+首先，您需要编写一个脚本来清理 `/var/log/xiaoduo` 目录中的日志文件。
+
+1. 打开终端，使用您喜欢的文本编辑器创建一个清理日志的脚本文件。例如使用 `nano` 编辑器：
+
+```
+bashCopy Codenano ~/clean_xiaoduo_logs.sh
+```
+
+1. 在脚本中编写如下内容来删除日志文件。假设您只想删除 `.log` 后缀的日志文件：
+
+```
+bashCopy Code#!/bin/bash
+
+# 目录路径
+LOG_DIR="/var/log/xiaoduo"
+
+# 删除所有 .log 文件（可根据需要修改删除条件）
+find $LOG_DIR -name "*.log" -type f -exec rm -f {} \;
+
+# 如果您想保留最近的文件或按照其他规则删除，可以使用 find 的其他选项，例如：
+# find $LOG_DIR -name "*.log" -type f -mtime +7 -exec rm -f {} \;  # 删除7天前的日志文件
+```
+
+1. 保存文件并退出编辑器（如果使用 `nano`，按 `Ctrl+X`，然后按 `Y` 确认保存）。
+2. 为脚本文件设置可执行权限：
+
+### 2. 设置定时任务
+
+接下来，您需要设置一个定时任务来定期运行该脚本。可以使用 `cron` 来实现这一点。
+
+1. 使用 `crontab` 编辑定时任务：
+
+```
+bashCopy Codecrontab -e
+```
+
+1. 在打开的 `crontab` 文件中，添加以下内容以每天定时清理日志。假设您希望每天凌晨 1 点执行该清理脚本：
+
+```
+bashCopy Code0 1 * * * /bin/bash /home/yourusername/clean_xiaoduo_logs.sh
+```
+
+这里的 `0 1 * * *` 表示每天的凌晨 1 点执行该任务。根据您的需要，可以调整这个时间。
+
+1. 保存并退出编辑器。
+
+### 3. 验证 `cron` 服务是否在运行
+
+在 WSL 中，默认情况下 `cron` 服务可能不会自动启动。您可以手动启动 `cron` 服务，确保定时任务能够按时执行。
+
+1. 启动 `cron` 服务：
+
+```
+bashCopy Codesudo service cron start
+```
+
+1. 如果您希望 `cron` 服务在每次启动时自动启动，可以使用以下命令：
+
+```
+bashCopy Codesudo service cron enable
+```
+
+### 4. 测试脚本和定时任务
+
+1. 手动运行脚本以确保其正确工作：
+
+```
+bashCopy Code~/clean_xiaoduo_logs.sh
+```
+
+1. 检查日志目录 `/var/log/xiaoduo`，确认文件已被删除。
+2. 查看 `cron` 日志确认任务是否按时执行：
+
+```
+bashCopy Codegrep CRON /var/log/syslog
+```
+
+通过上述步骤，您已经设置了一个定时任务来定期清理 `/var/log/xiaoduo` 中的日志文件。如果有更多定制需求，可
+
+
+
+
+
+
+
+## 查看日志
+
+```sh
+要在命令行中使用 tail -f 和 grep 同时高亮显示匹配的内容，你可以利用 grep 的 --color=auto 选项来实现高亮显示。
+
+例如，使用以下命令来跟踪日志并高亮显示包含 "finish dy sync task" 的行：
+
+bash
+tail -f goods-center-allsync-worker.app.log | grep --color=auto "finish dy sync task"
+解释：
+tail -f goods-center-allsync-worker.app.log：实时输出 goods-center-allsync-worker.app.log 文件的内容。
+grep --color=auto "finish dy sync task"：grep 会高亮显示匹配到的 "finish dy sync task" 字符串。
+如果你的终端支持颜色，--color=auto 会使 grep 高亮显示匹配的部分。
+```
+

@@ -3568,9 +3568,7 @@ WSL 是一种通过 Windows 提供的子系统运行 Linux 环境，某些情况
 
     这样脚本将会在一个新的 `tmux` 会话中运行，即使你退出或锁定系统，它也会继续执行。
 
-
-
-
+## 删除文件
 
 ### 1. 创建清理日志的脚本
 
@@ -3579,13 +3577,13 @@ WSL 是一种通过 Windows 提供的子系统运行 Linux 环境，某些情况
 1. 打开终端，使用您喜欢的文本编辑器创建一个清理日志的脚本文件。例如使用 `nano` 编辑器：
 
 ```
-bashCopy Codenano ~/clean_xiaoduo_logs.sh
+vim /opt/script/clean_xiaoduo_logs.sh
 ```
 
 1. 在脚本中编写如下内容来删除日志文件。假设您只想删除 `.log` 后缀的日志文件：
 
 ```
-bashCopy Code#!/bin/bash
+#!/bin/bash
 
 # 目录路径
 LOG_DIR="/var/log/xiaoduo"
@@ -3607,13 +3605,13 @@ find $LOG_DIR -name "*.log" -type f -exec rm -f {} \;
 1. 使用 `crontab` 编辑定时任务：
 
 ```
-bashCopy Codecrontab -e
+crontab -e
 ```
 
 1. 在打开的 `crontab` 文件中，添加以下内容以每天定时清理日志。假设您希望每天凌晨 1 点执行该清理脚本：
 
 ```
-bashCopy Code0 1 * * * /bin/bash /home/yourusername/clean_xiaoduo_logs.sh
+0 1 * * * /bin/bash /home/yourusername/clean_xiaoduo_logs.sh
 ```
 
 这里的 `0 1 * * *` 表示每天的凌晨 1 点执行该任务。根据您的需要，可以调整这个时间。
@@ -3627,13 +3625,13 @@ bashCopy Code0 1 * * * /bin/bash /home/yourusername/clean_xiaoduo_logs.sh
 1. 启动 `cron` 服务：
 
 ```
-bashCopy Codesudo service cron start
+sudo service cron start
 ```
 
 1. 如果您希望 `cron` 服务在每次启动时自动启动，可以使用以下命令：
 
 ```
-bashCopy Codesudo service cron enable
+sudo service cron enable
 ```
 
 ### 4. 测试脚本和定时任务
@@ -3641,23 +3639,15 @@ bashCopy Codesudo service cron enable
 1. 手动运行脚本以确保其正确工作：
 
 ```
-bashCopy Code~/clean_xiaoduo_logs.sh
+~/clean_xiaoduo_logs.sh
 ```
 
 1. 检查日志目录 `/var/log/xiaoduo`，确认文件已被删除。
 2. 查看 `cron` 日志确认任务是否按时执行：
 
 ```
-bashCopy Codegrep CRON /var/log/syslog
+grep CRON /var/log/syslog
 ```
-
-通过上述步骤，您已经设置了一个定时任务来定期清理 `/var/log/xiaoduo` 中的日志文件。如果有更多定制需求，可
-
-
-
-
-
-
 
 ## 查看日志
 
@@ -3672,5 +3662,74 @@ tail -f goods-center-allsync-worker.app.log | grep --color=auto "finish dy sync 
 tail -f goods-center-allsync-worker.app.log：实时输出 goods-center-allsync-worker.app.log 文件的内容。
 grep --color=auto "finish dy sync task"：grep 会高亮显示匹配到的 "finish dy sync task" 字符串。
 如果你的终端支持颜色，--color=auto 会使 grep 高亮显示匹配的部分。
+```
+
+## 别名
+
+### 步骤 1：修改脚本路径
+
+编辑你的脚本 `connect_dev.sh`，确保它使用正确的路径来替换配置文件：
+
+1. 打开脚本：
+
+   ```
+   vim /opt/script/connect_dev.sh
+   ```
+
+2. 修改脚本内容为以下：
+
+   ```
+   #!/bin/bash
+   
+   # 替换 /root/.kube/config 的内容为 /root/.kube/config-other
+   cp /root/.kube/config-other /root/.kube/config
+   
+   # 执行 ktctl 命令
+   sudo ktctl -d --namespace=dev-lane connect --method=vpn
+   ```
+
+3. 保存并退出编辑器（按 `CTRL+X`，然后按 `Y` 保存更改，最后按 `Enter`）。
+
+### 步骤 2：确保脚本可执行
+
+再次确认脚本具有可执行权限：
+
+```
+chmod +x /opt/script/connect_dev.sh
+```
+
+### 步骤 3：修改别名
+
+编辑你的 `.bashrc` 或 `.zshrc` 文件，创建一个别名来调用这个脚本。
+
+1. 打开 `.bashrc` 文件：
+
+   ```
+   vim ~/.bashrc
+   ```
+
+2. 在文件末尾添加以下别名：
+
+   ```
+   alias 'connect_dev'='/opt/script/connect_dev.sh'
+   ```
+
+3. 保存并退出编辑器。
+
+4. 使配置文件生效：
+
+   ```
+   source ~/.bashrc
+   ```
+
+### 步骤 4：测试别名
+
+现在，你可以在 WSL 中运行 `connect dev`，它将会执行以下操作：
+
+1. 替换 `/root/.kube/config` 为 `/root/.kube/config-other`。
+2. 执行 `ktctl` 命令。
+
+```
+connect_dev
 ```
 
